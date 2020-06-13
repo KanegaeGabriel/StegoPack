@@ -28,12 +28,12 @@ Alongside the application itself, there can be some extra analysis done on the e
 ### Usage
 
 ```
-py StegoPack.py
+py main.py
 Usage:
-   python3 StegoPack.py (imageFilename)
-       > Get info about file storage capacity and check if there's a payload
-   python3 StegoPack.py (imageFilename) (payloadFilename) (outputFilename)
-       > Store payload into image and output a new image
+  python3 main.py (imageFilename)
+    > Get info about file storage capacity and check if there's a payload
+  python3 main.py (imageFilename) (payloadFilename) (outputFilename)
+    > Store payload into image and output a new PNG image
 ```
 
 ### Image Info
