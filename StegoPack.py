@@ -93,7 +93,10 @@ class Image:
 
         return decodedBytes
 
-    def decodePayload(self, payloadLevel):
+    def decodePayload(self, payloadLevel=None):
+        if not payloadLevel:
+            _, payloadLevel = self.hasPayload()
+
         payload = Payload()
         payload.level = payloadLevel
 

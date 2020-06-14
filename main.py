@@ -43,11 +43,12 @@ def main():
             print("Decoding...")
             
             t0 = time()
-
             payload = image.decodePayload(payloadLevel)
+            t1 = time()
+
             payload.saveFile()
             
-            print("Saved to '{}'! Took {:.2f}s".format(payload.filename, time()-t0))
+            print("Saved to '{}'! Took {:.2f}s".format(payload.filename, t1-t0))
         else:
             print("No payload detected in '{}'!".format(image.filename))
             return
