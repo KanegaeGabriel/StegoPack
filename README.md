@@ -33,11 +33,11 @@ Final project for **[SCC0251 - Image Processing](https://uspdigital.usp.br/jupit
 
 Image | Image Size | Payload | Payload Size | Encoding | Output | Output Size
 -|-|-|-|-|-|-|
-corgi-599x799.jpg | 66.2 KB | faustao.png | 97.1 KB | L0 | corgi-L0.png | 671 KB
-randall-2560x1372.png | 1.2 MB | pier39.mp4 | 3.2 MB | L2 | randall-L2.png | 4.25 MB
-plush-418x386.jpg | 16.6 KB | paperpeople.txt | 3.3 KB | L0 | plush-LO.png | 156 KB
-californiaadventure_1080x1350.jpg | 201.3 KB | git-cheatsheet.pdf | 352.8 KB | L0 | californiaadventures-L0.png | 2.1 MB
-nightfall-1920x1080.jpg | 1.1 MB | hap.mp4 | 1.2 MB | L1 | nightfall-L1.png | 2.8 MB
+corgi-599x799.jpg | 66.2 KB | [faustao.png](demo_files/payloads/faustao.png) | 97.1 KB | L0 | corgi-L0.png | 671 KB
+randall-2560x1372.png | 1.2 MB | [pier39.mp4](demo_files/payloads/pier39.mp4) | 3.2 MB | L2 | randall-L2.png | 4.3 MB
+plush-418x386.jpg | 16.6 KB | [paperpeople.txt](demo_files/payloads/paperpeople.txt) | 3.3 KB | L0 | plush-L0.png | 156 KB
+caliadventure_1080x1350.jpg | 201.3 KB | [git-cheatsheet.pdf](demo_files/payloads/git-cheatsheet.pdf) | 352.8 KB | L0 | caliadventure-L0.png | 2.1 MB
+nightfall-1920x1080.jpg | 1.1 MB | [hap.mp4](demo_files/payloads/hap.mp4) | 1.2 MB | L1 | nightfall-L1.png | 2.8 MB
 
 ## To-Do List
 
