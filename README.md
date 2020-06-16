@@ -5,27 +5,39 @@ Final project for **[SCC0251 - Image Processing](https://uspdigital.usp.br/jupit
 * 10262648 - Gabriel Kanegae Souza
 * 10262652 - [João Vitor dos Santos Tristão](http://github.com/jtristao/)
 
-`StegoPack` is a full application and Python module that is able to encode any file into an image via **LSB steganography**, as well as detect and decode a file from an image. For that, the lowest level of encoding should be selected (the one that degrades the original image the least) between **1-, 2- and 4-bit LSB**, based on file sizes.
+`StegoPack` is a Python module and full application that is able to encode any file into an image via **LSB steganography**, as well as detect and decode a file from an image. For that, the lowest level of encoding is be selected (the one that degrades the original image the least) between **1, 2 and 4-bit LSB**, based on file sizes.
 
 ## Dependencies
 
 - [`NumPy 1.17.4`](https://numpy.org/) module. Install with `pip3 install numpy`.
 - [`imageio 2.8.0`](https://pypi.org/project/imageio/) module. Install with `pip3 install imageio`.
 
-## Usage
+## Files
 
-`python3 main.py`
-Show usage info.
+* `StegoPack.py` is the main module that contains the `Image` and `Payload` classes.
+* `main.py` is the CLI application to encode/decode images.
+* `Demo.ipynb` is a Jupyter Notebook containing a few examples using `StegoPack.py` and files from `demo_files/`.
 
-`python3 main.py (imageFilename)`
-Show image info and storage capabilities. Detects and decodes any payload in it.
+## Application Usage
 
-`python3 main.py (imageFilename) (payloadFilename) (outputFilename)`
-Encode `payloadFilename` into `imageFilename` and output as `outputFilename`.
+* `python3 main.py`
+  * Show usage info.
+
+* `python3 main.py (imageFilename)`
+  * Show image info and storage capabilities. Detects and decodes any payload in it.
+
+* `python3 main.py (imageFilename) (payloadFilename) (outputFilename)`
+  * Encode `payloadFilename` into `imageFilename` and output as `outputFilename`.
 
 ## Examples
 
-...
+Image | Image Size | Payload | Payload Size | Encoding | Output | Output Size
+-|-|-|-|-|-|-|
+corgi-599x799.jpg | 66.2 KB | faustao.png | 97.1 KB | L0 | corgi-L0.png | 671 KB
+randall-2560x1372.png | 1.2 MB | pier39.mp4 | 3.2 MB | L2 | randall-L2.png | 4.25 MB
+plush-418x386.jpg | 16.6 KB | paperpeople.txt | 3.3 KB | L0 | plush-LO.png | 156 KB
+californiaadventure_1080x1350.jpg | 201.3 KB | git-cheatsheet.pdf | 352.8 KB | L0 | californiaadventures-L0.png | 2.1 MB
+nightfall-1920x1080.jpg | 1.1 MB | hap.mp4 | 1.2 MB | L1 | nightfall-L1.png | 2.8 MB
 
 ## To-Do List
 
