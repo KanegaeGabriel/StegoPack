@@ -5,7 +5,7 @@ Final project for **[SCC0251 - Image Processing](https://uspdigital.usp.br/jupit
 * 10262648 - Gabriel Kanegae Souza
 * 10262652 - [João Vitor dos Santos Tristão](http://github.com/jtristao/)
 
-`StegoPack` is a Python module and full application that is able to encode any file into an image via **LSB steganography**, as well as detect and decode a file from an image. For that, the lowest level of encoding is be selected (the one that degrades the original image the least), based on file sizes.
+`StegoPack` is a Python module and full application that is able to encode any file into an image via **LSB steganography**, as well as detect and decode a file from an image. For that, the lowest level of encoding is be selected (the one that degrades the original image the least), based on file sizes. It receives an image of any extension and size, as well as a file of any type, and outputs a PNG image.
 
 The encoding levels available are:
 
@@ -20,9 +20,9 @@ The encoding levels available are:
 
 ## Files
 
-* `StegoPack.py` is the main module that contains the `Image` and `Payload` classes.
-* `main.py` is the CLI application to encode/decode images.
-* `Demo.ipynb` is a Jupyter Notebook containing a few examples using `StegoPack.py` and files from `demo_files/`.
+* [`StegoPack.py`](StegoPack.py) is the main module that contains the `Image` and `Payload` classes.
+* [`main.py`](main.py) is the CLI application to encode/decode images.
+* [`Demo.ipynb`](Demo.ipynb) is a Jupyter Notebook containing a few examples using [`StegoPack.py`](StegoPack.py) and files from [`demo_files/`](demo_files/).
 
 ## Application Usage
 
@@ -37,7 +37,7 @@ The encoding levels available are:
 
 ## Examples
 
-Image | Image Size | Payload | Payload Size | Encoding | Output | Output Size
+Input Image | Input Size | Payload | Payload Size | Encoding | Output Image | Output Size
 -|-|-|-|-|-|-|
 [corgi-599x799.jpg](demo_files/corgi-599x799.jpg) | 66.2 KB | [faustao.png](demo_files/payloads/faustao.png) | 97.1 KB | L0 | [corgi-L0.png](demo_files/encoded/corgi-L0.png) | 671 KB
 [randall-2560x1372.png](demo_files/randall-2560x1372.png) | 1.2 MB | [pier39.mp4](demo_files/payloads/pier39.mp4) | 3.2 MB | L2 | [randall-L2.png](demo_files/encoded/randall-L2.png) | 4.3 MB
