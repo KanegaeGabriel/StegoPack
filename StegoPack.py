@@ -1,6 +1,7 @@
 from os.path import getsize
 import numpy as np
 import imageio
+import os
 
 validChars = set("abcdefghijklmnopqrstuvwxyz_-.0123456789!âêîôûãõáéíóúàèìòùñç \\/")
 
@@ -37,11 +38,17 @@ class Image:
         self._cur = 0
 
     def saveFile(self, filename):
+        # Replace output file extension to '.png' if it isn't already
+        if not filename.lower().endswith(".png"):
+            if "." in filename:
+                filename = ".".join(filename.split(".")[:-1])
+            filename += ".png"
+
         imageio.imwrite(filename, self.data)
 
     def printInfo(self):
         print("'{}' has file size {} and".format(self.filename, formatBytes(self.dataSize)), end=" ")
-        print("dimensions {}x{} ({} pixels)".format(self.height, self.width, self.pixels))
+        print("dimensions {}x{} ({} pixels)".format(self.width, self.height, self.pixels))
         
         print("Payload storage capacities (including payload header):")
         print("  Level 0: up to {}".format(formatBytes(self.storageL0)))
@@ -94,6 +101,9 @@ class Image:
         return decodedBytes
 
     def decodePayload(self, payloadLevel=None):
+        if not self.hasPayload():
+            return None
+
         if not payloadLevel:
             _, payloadLevel = self.hasPayload()
 
@@ -144,18 +154,18 @@ class Image:
 class Payload:
     def __init__(self, filename=None):
         if filename:
-            self.filename = filename
+            self.filename = os.path.split(filename)[-1]
             self.data = loadBinaryFile(filename)
 
             self.encoding = 0
             self.level = 0
-            self.filenameSize = len(filename)
+            self.filenameSize = len(self.filename)
             self.dataSize = len(self.data)
 
             self.packedSize = 3 + self.filenameSize + 4 + self.dataSize
 
-    def saveFile(self):
-        saveBinaryFile(self.data, self.filename)
+    def saveFile(self, path=""):
+        saveBinaryFile(self.data, os.path.join(path, self.filename))
 
     def printInfo(self):
         print("'{}' needs {} of payload storage.".format(self.filename, formatBytes(self.packedSize)))

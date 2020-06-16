@@ -57,12 +57,6 @@ def main():
     if len(argv) == 4:
         imgInputFilename, payloadFilename, imgOutputFilename = argv[1:]
 
-        # Replace output file extension to '.png' if it isn't already
-        if not imgOutputFilename.lower().endswith(".png"):
-            if "." in imgOutputFilename:
-                imgOutputFilename = ".".join(imgOutputFilename.split(".")[:-1])
-            imgOutputFilename += ".png"
-
         for filename in [imgInputFilename, payloadFilename]:
             if not isfile(filename):
                 print("File '{}' not found. Exiting...".format(filename))
