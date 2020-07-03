@@ -35,7 +35,21 @@ The encoding levels available are:
 * `python3 main.py (imageFilename) (payloadFilename) (outputFilename)`
   * Encode `payloadFilename` into `imageFilename` and output as `outputFilename`.
 
+## Application Step-by-step
+
+The application ([`main.py`](main.py)) starts off by checking CLI arguments and running the appropriate subroutine from the three listed above.
+
+### Encoding
+
+After checking for the files existence, the application prints some input image metadata (`Image.printInfo()`), compiles the payload (`Payload.__init__()`) - creating a header with payload metadata like name and size - and prints its metadata as well (`Payload.printInfo()`). Then, it finds the appropriate encoding level based on payload size and the input image resolution, and encodes it using LSB steganography (`Image.encodePayload()`), saving it as `outputFilename`.
+
+### Decoding / Image Info
+
+Also checks if the files exist and prints image metadata (`Image.printInfo()`). Then, it searches for the existence of a payload in it by trying to read the payload header in all possible encoding levels (`Image.hasPayload()`). If one is found, the payload is decoded (`Image.decodePayload()`) and saved with its original filename.
+
 ## Examples
+
+As the application is supposed to work with any image and payload file as input, the examples listed below are random images and files from the internet, with varying resolutions, styles and file sizes as to showcase the different distortions from different encoding levels.
 
 Input Image | Input Size | Payload | Payload Size | Encoding | Output Image | Output Size
 -|-|-|-|-|-|-|
