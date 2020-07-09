@@ -5,7 +5,7 @@ Final project for **[SCC0251 - Image Processing](https://uspdigital.usp.br/jupit
 * 10262648 - Gabriel Kanegae Souza
 * 10262652 - [João Vitor dos Santos Tristão](http://github.com/jtristao/)
 
-`StegoPack` is a Python module and full application that is able to encode any file into an image via **LSB steganography**, as well as detect and decode a file from an image. For that, the lowest level of encoding is be selected (the one that degrades the original image the least), based on file sizes. It receives an image of any extension and size, as well as a file of any type, and outputs a PNG image.
+`StegoPack` is a Python module and full application that is able to encode any file into an image via **LSB steganography**, as well as detect and decode a file from an image. For that, the lowest level of encoding is be selected (the one that degrades the original image the least), based on file sizes. For encoding, it receives an image and a file of any type, and outputs a PNG image with the file encoded in it. For decoding, it receives the image with an encoded file, and outputs the file with its original filename.
 
 The encoding levels available are:
 
@@ -58,10 +58,14 @@ Input Image | Input Size | Payload | Payload Size | Encoding | Output Image | Ou
 [caliadventure-1080x1350.jpg](demo_files/caliadventure-1080x1350.jpg) | 201.3 KB | [git-cheatsheet.pdf](demo_files/payloads/git-cheatsheet.pdf) | 352.8 KB | L0 | [caliadventure-L0.png](demo_files/encoded/caliadventure-L0.png) | 2.1 MB
 [nightfall-1920x1080.jpg](demo_files/nightfall-1920x1080.jpg) | 1.1 MB | [hap.mp4](demo_files/payloads/hap.mp4) | 1.2 MB | L1 | [nightfall-L1.png](demo_files/encoded/nightfall-L1.png) | 2.8 MB
 
+## Limitations
+
+* Assumes input image is a regular 3- or 4-channel (alpha) image (JPG, BMP, PNG, etc.). No specific support for types such as TIFF or GIF
+* Can only output PNGs
+
 ## To-Do List
 
-* Deny GIFs and other unwanted files read by `imageio` 
-* Handle BW/transparent PNGs properly
 * Parallelize encoding/decoding
-* Extra encoding modes and strategies
-* Add decoded file integrity checks via file hashes
+* Add decoded file integrity checking via file hashes
+* Handle PNGs as input (ignore transparency?)
+* Extra encoding modes and strategies?
