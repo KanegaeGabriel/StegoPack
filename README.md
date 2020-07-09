@@ -66,6 +66,5 @@ Input Image | Input Size | Payload | Payload Size | Encoding | Output Image | Ou
 ## To-Do List
 
 * Parallelize encoding/decoding
-* Add decoded file integrity checking via file hashes
 * Handle PNGs as input (ignore transparency?)
 * Extra encoding modes and strategies?

@@ -1,9 +1,10 @@
 from os.path import getsize
 import numpy as np
 import imageio
+import hashlib
 import os
 
-validChars = set("abcdefghijklmnopqrstuvwxyz_-.0123456789!âêîôûãõáéíóúàèìòùñç")
+validChars = set("abcdefghijklmnopqrstuvwxyz_-.0123456789!âêîôûãõáéíóúàèìòùñç ")
 
 def loadBinaryFile(filename):
     with open(filename, "rb") as f:
@@ -26,13 +27,9 @@ class Image:
     def __init__(self, filename):
         self.filename = filename
         
-        try:
-            self.data = imageio.imread(filename).astype(np.uint8)
-        except ValueError as e:
-            raise e
-
+        self.data = imageio.imread(filename).astype(np.uint8)
         self.dataSize = getsize(filename)
-
+        
         self.height, self.width = self.data.shape[:2]
         self.pixels = self.height * self.width
 
@@ -108,19 +105,24 @@ class Image:
 
     def decodePayload(self, verbose=True):
         if not self.hasPayload():
-            raise Exception("No payload found in '{}'.".format(self.filename))
+            raise ValueError("No payload found in '{}'.".format(self.filename))
 
         payloadFilename, payloadLevel = self.hasPayload()
 
-        if verbose: print("File '{}' found encoded as L{}! Decoding...".format(payloadFilename, payloadLevel))
+        if verbose: print("File '{}' found encoded as L{}!\nDecoding...".format(payloadFilename, payloadLevel))
 
         self._cur = 0
 
+        # Reading payload header
         payload = Payload()
         payload.encoding, payload.level, payload.filenameSize = self.__readNextBytes(3, payloadLevel)
         payload.filename = self.__readNextBytes(payload.filenameSize, payloadLevel).decode("UTF-8")
+        hashRead = self.__readNextBytes(hashlib.sha256().digest_size, payloadLevel)
         payload.dataSize = int.from_bytes(self.__readNextBytes(4, payloadLevel), byteorder="big", signed=False)
+        
+        # Reading data
         payload.data = self.__readNextBytes(payload.dataSize, payloadLevel)
+        assert hashRead == hashlib.sha256(payload.data).digest(), "Payload integrity check failed. File might be corrupted."
 
         return payload
 
@@ -186,16 +188,19 @@ class Payload:
         saveBinaryFile(self.data, os.path.join(path, self.filename))
 
     def printInfo(self):
-        packedSize = 3 + self.filenameSize + 4 + self.dataSize
+        packedSize = 3 + self.filenameSize + hashlib.sha256().digest_size + 4 + self.dataSize
         print("'{}' needs {} of payload storage.".format(self.filename, formatBytes(packedSize)))
 
     def getBytes(self, payloadLevel):
+        # Encoding payload header (at least 41 bytes)
+
+        # comp-encoding + comp-lvl + filename-size + FILENAME + data-hash + data-size +  DATA
+        #       1B      +    1B    +       1B      + [1-255]B +    32B    +     4B    + [1-?]B
+
         header = bytearray([self.encoding, payloadLevel, self.filenameSize])
         header += bytearray(self.filename, "UTF-8")
+        header += hashlib.sha256(self.data).digest()
         header += self.dataSize.to_bytes(4, byteorder="big", signed=False)
-
-        # comp-encoding + comp-lvl + filename-size + FILENAME + data-size + DATA
-        #       1b      +    1b    +       1b      + FILENAME +     4b    + DATA
 
         return header + self.data
 
@@ -224,7 +229,12 @@ if __name__ == "__main__":
         image.printInfo()
 
         t0 = time()
-        payload = image.decodePayload()
+        try:
+            payload = image.decodePayload()
+        except ValueError as e:
+            print(e)
+            exit()
+
         t1 = time()
 
         payload.saveFile()
