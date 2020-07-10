@@ -4,8 +4,6 @@ import imageio
 import hashlib
 import os
 
-validChars = set("abcdefghijklmnopqrstuvwxyz_-.0123456789!âêîôûãõáéíóúàèìòùñç ")
-
 def loadBinaryFile(filename):
     with open(filename, "rb") as f:
         return f.read()
@@ -47,6 +45,7 @@ class Image:
             filename += ".png"
 
         imageio.imwrite(filename, self.data)
+        return filename
 
     def printInfo(self):
         print("'{}' has file size {} and".format(self.filename, formatBytes(self.dataSize)), end=" ")
@@ -60,16 +59,15 @@ class Image:
     def hasPayload(self):
         for testLevel in [0, 1, 2]:
             self._cur = 0
-            
+
             encoding, level, filenameSize = self.__readNextBytes(3, testLevel)
-            if not all([encoding == 0, level == testLevel, 0 <= filenameSize <= 255]): continue
+            if not all([encoding == 0, level == testLevel, 0 < filenameSize <= 255]): continue
 
             try:
                 filename = self.__readNextBytes(filenameSize, testLevel)
                 filename = filename.decode("UTF-8")
 
-                assert len(filename) > 0
-                assert all(c in validChars for c in filename.lower())
+                assert len(filename) == filenameSize
 
                 return filename, testLevel
             except:
@@ -78,30 +76,29 @@ class Image:
         return None
 
     def __readNextBytes(self, n, level):
-        # lvl stp mask ite
-        #  0   1    1   8
-        #  1   2    3   4
-        #  2   4   15   2
+        # lvl stp mask
+        #  0   1    1 
+        #  1   2    3 
+        #  2   4   15 
         step = 2**level
         mask = (2**(2**level))-1
-        ite = 2**(3-level)
         
-        decodedBytes = bytearray()
-        byte = 0
-        while len(decodedBytes) < n:
-            i = self._cur // (self.width * 3)
-            j = (self._cur % (self.width * 3)) // 3
-            k = self._cur % 3
+        decoded = bytearray(n)
 
-            byte <<= step
-            byte |= self.data[i,j,k] & mask
+        subpixelsWidth = self.width * 3
+        
+        for byte in range(len(decoded)):
+            for _ in range(8//step):
+                i = self._cur // subpixelsWidth
+                j = (self._cur % subpixelsWidth) // 3
+                k = self._cur % 3
 
-            self._cur += 1
-            if self._cur % ite == 0:
-                decodedBytes.append(byte)
-                byte = 0
+                decoded[byte] <<= step
+                decoded[byte] |= self.data[i,j,k] & mask
 
-        return decodedBytes
+                self._cur += 1
+
+        return decoded
 
     def decodePayload(self, verbose=True):
         if not self.hasPayload():
@@ -141,6 +138,8 @@ class Image:
 
         packedPayload = payload.getBytes(payloadLevel)
 
+        subpixelsWidth = self.width * 3
+
         # lvl stp mask
         #  0   1    1
         #  1   2    3
@@ -148,20 +147,21 @@ class Image:
         step = 2**payloadLevel
         mask = (2**(2**payloadLevel))-1
 
-        cur = 0
         for byte in range(len(packedPayload)):
+            cur = 8*byte // step
+            
+            # 0: [7, 6, 5, 4, 3, 2, 1, 0], 1: [6, 4, 2, 0], 2: [4, 0]
             for bit in range(8-step, -1, -step):
-                # 0: [7, 6, 5, 4, 3, 2, 1, 0], 1: [6, 4, 2, 0], 2: [4, 0]
                 bits = (packedPayload[byte] >> bit) & mask
 
-                i = cur // (self.width * 3)
-                j = (cur % (self.width * 3)) // 3
+                i = cur // subpixelsWidth
+                j = (cur % subpixelsWidth) // 3
                 k = cur % 3
 
-                # print("Encoding '{}' into {}: {:>3} {:>8} -> {:>3} {:>8}" \
-                #       .format(bin(bits&mask)[2:].zfill(step), (i,j,k),
-                #               self.data[i,j,k], bin(self.data[i,j,k])[2:],
-                #               (self.data[i,j,k]&(255-mask))|bits, bin((self.data[i,j,k]&(255-mask))|bits)[2:]))
+                # print(f"Encoding '{bin(bits)[2:].zfill(step)}' into {(i,j,k)}:",
+                #       f"{self.data[i,j,k]:>3} {bin(self.data[i,j,k])[2:]:>8}",
+                #       f"-> {(self.data[i,j,k]&(255-mask))|bits:>3}"
+                #       f"{bin((self.data[i,j,k]&(255-mask))|bits)[2:]:>8}")
 
                 self.data[i,j,k] &= 0b11111111 - mask
                 self.data[i,j,k] |= bits
@@ -192,10 +192,10 @@ class Payload:
         print("'{}' needs {} of payload storage.".format(self.filename, formatBytes(packedSize)))
 
     def getBytes(self, payloadLevel):
-        # Encoding payload header (at least 41 bytes)
+        # Encoding payload header (at least 40 bytes)
 
-        # comp-encoding + comp-lvl + filename-size + FILENAME + data-hash + data-size +  DATA
-        #       1B      +    1B    +       1B      + [1-255]B +    32B    +     4B    + [1-?]B
+        # encoding + level + filename-size + FILENAME + data-hash + data-size
+        #    1B    +   1B  +       1B      + [1-255]B +    32B    +     4B   
 
         header = bytearray([self.encoding, payloadLevel, self.filenameSize])
         header += bytearray(self.filename, "UTF-8")
@@ -238,7 +238,7 @@ if __name__ == "__main__":
         t1 = time()
 
         payload.saveFile()
-        print("Saved to '{}'! Took {:.2f}s".format(payload.filename, t1-t0))
+        print("Saved to '{}'! Took {:.2f}s.".format(payload.filename, t1-t0))
 
     # File encoding
     if len(argv) == 4:
@@ -254,5 +254,5 @@ if __name__ == "__main__":
         image.encodePayload(payload)
         t1 = time()
 
-        image.saveFile(imgOutputFilename)
+        imgOutputFilename = image.saveFile(imgOutputFilename)
         print("Saved to '{}'! Took {:.2f}s.".format(imgOutputFilename, t1-t0))
