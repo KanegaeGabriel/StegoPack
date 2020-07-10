@@ -34,17 +34,24 @@ The encoding levels available are:
 * `python3 StegoPack.py (imageFilename) (payloadFilename) (outputFilename)`
   * Encode `payloadFilename` into `imageFilename` and output as `outputFilename`.
 
-## Application Step-by-step
+## Implementation Details
 
-The application starts off by checking CLI arguments and running the appropriate subroutine from the three listed above.
+### Payload Header
 
-### Encoding
+When the payload is encoded/decoded, a header is placed in the base file preceding the actual data, storing metadata. Here is a more detailed look at its format and fields:
 
-After checking for the files existence, the application prints some input image metadata (`Image.printInfo()`), compiles the payload (`Payload.__init__()`) - creating a header with payload metadata like name and size - and prints its metadata as well (`Payload.printInfo()`). Then, it finds the appropriate encoding level based on payload size and the input image resolution, and encodes it using LSB steganography (`Image.encodePayload()`), saving it as `outputFilename`.
+|`encoding`|`level`|`filename-size`|`filename`|`data-hash`|`data-size`|
+|-|-|-|-|-|-|
+|1 byte|1 byte|1 byte|`filename-size` bytes|32 bytes|4 bytes|
 
-### Decoding / Image Info
+* `encoding`: always 0.
+* `level`: can be 0, 1 or 2. Determines the encoding level (1-bit LSB, 2-bit LSB, 4-bit LSB, respectively).
+* `filename-size`: length of `filename` field.
+* `filename`: payload original filename.
+* `data-hash`: SHA-256 hash of the payload data, to be checked against the decoded data.
+* `data-size`: payload data size.
 
-Also checks if the files exist and prints image metadata (`Image.printInfo()`). Then, it searches for the existence of a payload in it by trying to read the payload header in all possible encoding levels (`Image.hasPayload()`). If one is found, the payload is decoded (`Image.decodePayload()`) and saved with its original filename.
+After the header, a sequence of `data-size` bytes follows, containing the actual payload data.
 
 ## Examples
 
