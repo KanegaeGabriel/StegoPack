@@ -1,4 +1,5 @@
 from os.path import getsize
+import multiprocessing
 import numpy as np
 import imageio
 import hashlib
@@ -60,11 +61,11 @@ class Image:
         for testLevel in [0, 1, 2]:
             self._cur = 0
 
-            encoding, level, filenameSize = self.__readNextBytes(3, testLevel)
+            encoding, level, filenameSize = self.__readNextNBytes(3, testLevel)
             if not all([encoding == 0, level == testLevel, 0 < filenameSize <= 255]): continue
 
             try:
-                filename = self.__readNextBytes(filenameSize, testLevel)
+                filename = self.__readNextNBytes(filenameSize, testLevel)
                 filename = filename.decode("UTF-8")
 
                 assert len(filename) == filenameSize
@@ -75,27 +76,55 @@ class Image:
 
         return None
 
-    def __readNextBytes(self, n, level):
+    def _readNBytes(self, s, n, level):
         # lvl stp mask
         #  0   1    1 
         #  1   2    3 
         #  2   4   15 
         step = 2**level
         mask = (2**(2**level))-1
-        
-        decoded = bytearray(n)
-        for byte in range(len(decoded)):
-            for cur in range(self._cur, self._cur + (8//step)):
+
+        decoded = [0] * n
+        for byte in range(n):
+            for bit in range(8//step):
+                cur = ((s + byte) * (8//step)) + bit
+
                 i = cur // (self.width * 3)
                 j = (cur % (self.width * 3)) // 3
                 k = cur % 3
-
+                
                 decoded[byte] <<= step
                 decoded[byte] |= self.data[i,j,k] & mask
 
-            self._cur += 8 // step
+        return bytearray(decoded)
 
-        return decoded
+    def __readNextNBytes(self, n, level):
+        if n < 1000: # Read single-threaded to avoid overhead 
+            decoded = self._readNBytes(self._cur, n, level)
+        else:
+            threads = multiprocessing.cpu_count()
+
+            # Split workload - each thread will read bytes indexed in range(s, e)
+            args = []
+            for t in range(threads):
+                s = t * (n//threads) + min(n%threads, t)
+                e = (t+1) * (n//threads) + min(n%threads, (t+1))
+
+                args.append((self._cur + s, e-s, level))
+
+            # Spawn parallel processes
+            pool = multiprocessing.Pool()
+            partsDecoded = pool.starmap(self._readNBytes, args)
+            pool.close()
+            pool.join()
+
+            # Join partial results in a big array
+            decoded = []
+            for p in partsDecoded:
+                decoded += p
+
+        self._cur += n
+        return bytearray(decoded)
 
     def decodePayload(self, verbose=True):
         if not self.hasPayload():
@@ -109,13 +138,13 @@ class Image:
 
         # Read payload header
         payload = Payload()
-        payload.encoding, payload.level, payload.filenameSize = self.__readNextBytes(3, payloadLevel)
-        payload.filename = self.__readNextBytes(payload.filenameSize, payloadLevel).decode("UTF-8")
-        hashRead = self.__readNextBytes(hashlib.sha256().digest_size, payloadLevel)
-        payload.dataSize = int.from_bytes(self.__readNextBytes(4, payloadLevel), byteorder="big", signed=False)
+        payload.encoding, payload.level, payload.filenameSize = self.__readNextNBytes(3, payloadLevel)
+        payload.filename = self.__readNextNBytes(payload.filenameSize, payloadLevel).decode("UTF-8")
+        hashRead = self.__readNextNBytes(hashlib.sha256().digest_size, payloadLevel)
+        payload.dataSize = int.from_bytes(self.__readNextNBytes(4, payloadLevel), byteorder="big", signed=False)
         
         # Read data
-        payload.data = self.__readNextBytes(payload.dataSize, payloadLevel)
+        payload.data = self.__readNextNBytes(payload.dataSize, payloadLevel)
         assert hashRead == hashlib.sha256(payload.data).digest(), "Payload integrity check failed. File might be corrupted."
 
         return payload

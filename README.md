@@ -53,6 +53,12 @@ When the payload is encoded/decoded, a header is placed in the base file precedi
 
 After the header, a sequence of `data-size` bytes follows, containing the actual payload data.
 
+### Parallelization/Vectorization
+
+In theory, both encoding and decoding can be parallelized. However, as encoding consists mainly of writing to a big matrix (the resulting image) and Python's `multiprocessing` library is not fond of shared memory, that proved to be quite a challenge. Instead, encoding has been dramatically sped up by making heavy use of NumPy's vectorization methods, at the end of `Image.encodePayload()`.
+
+For decoding, a proper parallelization method was applied with `multiprocessing.Pool` using `threads` threads: each thread `t` decodes `n` payload bytes with indexes in `range(s, e)`, with `s = t * (n//threads) + min(n%threads, t)` and `e = (t+1) * (n//threads) + min(n%threads, (t+1))`. With encoding bit amounts being powers of 2, every thread is able to process its workload independently without the need to worry about race conditions. Overhead should be minimal as assigned job indexes are determined in O(1) time by the expressions above, thus being sequential and evenly shared. This section of code is present at the `Image.__readNextNBytes()` method.
+
 ## Examples
 
 As the application is supposed to work with any image and payload file as input, the examples listed below are random images and files from the internet, with varying resolutions, styles and file sizes as to showcase the different distortions from different encoding levels.
