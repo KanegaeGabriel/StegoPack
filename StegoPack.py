@@ -84,19 +84,16 @@ class Image:
         mask = (2**(2**level))-1
         
         decoded = bytearray(n)
-
-        subpixelsWidth = self.width * 3
-        
         for byte in range(len(decoded)):
-            for _ in range(8//step):
-                i = self._cur // subpixelsWidth
-                j = (self._cur % subpixelsWidth) // 3
-                k = self._cur % 3
+            for cur in range(self._cur, self._cur + (8//step)):
+                i = cur // (self.width * 3)
+                j = (cur % (self.width * 3)) // 3
+                k = cur % 3
 
                 decoded[byte] <<= step
                 decoded[byte] |= self.data[i,j,k] & mask
 
-                self._cur += 1
+            self._cur += 8 // step
 
         return decoded
 
@@ -110,14 +107,14 @@ class Image:
 
         self._cur = 0
 
-        # Reading payload header
+        # Read payload header
         payload = Payload()
         payload.encoding, payload.level, payload.filenameSize = self.__readNextBytes(3, payloadLevel)
         payload.filename = self.__readNextBytes(payload.filenameSize, payloadLevel).decode("UTF-8")
         hashRead = self.__readNextBytes(hashlib.sha256().digest_size, payloadLevel)
         payload.dataSize = int.from_bytes(self.__readNextBytes(4, payloadLevel), byteorder="big", signed=False)
         
-        # Reading data
+        # Read data
         payload.data = self.__readNextBytes(payload.dataSize, payloadLevel)
         assert hashRead == hashlib.sha256(payload.data).digest(), "Payload integrity check failed. File might be corrupted."
 
@@ -138,35 +135,31 @@ class Image:
 
         packedPayload = payload.getBytes(payloadLevel)
 
-        subpixelsWidth = self.width * 3
-
         # lvl stp mask
         #  0   1    1
         #  1   2    3
         #  2   4   15
         step = 2**payloadLevel
-        mask = (2**(2**payloadLevel))-1
+        mask = (2**(2**payloadLevel)) - 1
 
+        # Convert payload to a matrix format to allow for NumPy's vectorization
+        payloadMatrix = self.data.copy()
         for byte in range(len(packedPayload)):
-            cur = 8*byte // step
+            cur = byte * (8 // step)
             
             # 0: [7, 6, 5, 4, 3, 2, 1, 0], 1: [6, 4, 2, 0], 2: [4, 0]
             for bit in range(8-step, -1, -step):
-                bits = (packedPayload[byte] >> bit) & mask
-
-                i = cur // subpixelsWidth
-                j = (cur % subpixelsWidth) // 3
+                i = cur // (self.width * 3)
+                j = (cur % (self.width * 3)) // 3
                 k = cur % 3
 
-                # print(f"Encoding '{bin(bits)[2:].zfill(step)}' into {(i,j,k)}:",
-                #       f"{self.data[i,j,k]:>3} {bin(self.data[i,j,k])[2:]:>8}",
-                #       f"-> {(self.data[i,j,k]&(255-mask))|bits:>3}"
-                #       f"{bin((self.data[i,j,k]&(255-mask))|bits)[2:]:>8}")
-
-                self.data[i,j,k] &= 0b11111111 - mask
-                self.data[i,j,k] |= bits
+                payloadMatrix[i,j,k] = (packedPayload[byte] >> bit) & mask
 
                 cur += 1
+
+        # Replace last bits of every subpixel
+        self.data &= 0b11111111 - mask
+        self.data |= payloadMatrix
 
         return self.data
 

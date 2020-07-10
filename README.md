@@ -72,6 +72,5 @@ Input Image | Input Size | Payload | Payload Size | Encoding | Output Image | Ou
 
 ## To-Do List
 
-* Parallelize encoding/decoding
 * Handle PNGs as input (ignore transparency?)
 * Extra encoding modes and strategies?
