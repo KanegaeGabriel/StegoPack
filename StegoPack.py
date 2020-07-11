@@ -29,7 +29,9 @@ class Image:
         self.data = imageio.imread(filename).astype(np.uint8)
         self.dataSize = getsize(filename)
         
-        self.height, self.width = self.data.shape[:2]
+        self.height, self.width, self.channels = self.data.shape[:3]
+        assert self.channels >= 3, "Only RGB images are supported. Alpha channels can exist, but will be ignored."
+
         self.pixels = self.height * self.width
 
         self.storageL0 = (self.pixels * 3) // 8
@@ -74,7 +76,7 @@ class Image:
             except:
                 continue
 
-        return None
+        return None, None
 
     def _readNBytes(self, s, n, level):
         # lvl stp mask
@@ -82,7 +84,7 @@ class Image:
         #  1   2    3 
         #  2   4   15 
         step = 2**level
-        mask = (2**(2**level))-1
+        mask = (2**(2**level)) - 1
 
         decoded = [0] * n
         for byte in range(n):
@@ -99,7 +101,7 @@ class Image:
         return bytearray(decoded)
 
     def __readNextNBytes(self, n, level):
-        if n < 1000: # Read single-threaded to avoid overhead 
+        if n < 1000: # Read single-threaded to avoid overhead
             decoded = self._readNBytes(self._cur, n, level)
         else:
             threads = multiprocessing.cpu_count()
@@ -119,18 +121,16 @@ class Image:
             pool.join()
 
             # Join partial results in a big array
-            decoded = []
-            for p in partsDecoded:
-                decoded += p
+            decoded = [i for t in partsDecoded for i in t]
 
         self._cur += n
         return bytearray(decoded)
 
     def decodePayload(self, verbose=True):
-        if not self.hasPayload():
-            raise ValueError("No payload found in '{}'.".format(self.filename))
-
         payloadFilename, payloadLevel = self.hasPayload()
+
+        if not payloadFilename:
+            raise ValueError("No payload found in '{}'.".format(self.filename))
 
         if verbose: print("File '{}' found encoded as L{}!\nDecoding...".format(payloadFilename, payloadLevel))
 
@@ -150,19 +150,19 @@ class Image:
         return payload
 
     def encodePayload(self, payload, verbose=True):
-        if payload.dataSize > self.storageL2:
+        packedPayload = payload.getBytes(payloadLevel)
+
+        if len(packedPayload) > self.storageL2:
             raise ValueError("Payload '{}' too big to encode into '{}'.".format(payload.filename, self.filename))
 
-        if payload.dataSize <= self.storageL0:
+        if len(packedPayload) <= self.storageL0:
             payloadLevel = 0
-        elif payload.dataSize <= self.storageL1:
+        elif len(packedPayload) <= self.storageL1:
             payloadLevel = 1
         else:
             payloadLevel = 2
 
         if verbose: print("Encoding '{}' into '{}' using L{}...".format(payload.filename, self.filename, payloadLevel))
-
-        packedPayload = payload.getBytes(payloadLevel)
 
         # lvl stp mask
         #  0   1    1
@@ -173,6 +173,7 @@ class Image:
 
         # Convert payload to a matrix format to allow for NumPy's vectorization
         payloadMatrix = self.data.copy()
+
         for byte in range(len(packedPayload)):
             cur = byte * (8 // step)
             

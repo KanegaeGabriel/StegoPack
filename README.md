@@ -22,6 +22,7 @@ The encoding levels available are:
 
 * [`StegoPack.py`](StegoPack.py) is the main module, containing the `Image` and `Payload` classes. Can also be run standalone as a full application via CLI.
 * [`Demo.ipynb`](Demo.ipynb) is a Jupyter Notebook containing a few examples using [`StegoPack.py`](StegoPack.py) and files from [`demo_files/`](demo_files/).
+* [`regression_testing_and_benchmark.py`](`regression_testing_and_benchmark.py`) is a small helper script to run some examples, used on development to check for regression bugs. Also doubles as a benchmark, to evaluate improvements on runtime.
 
 ## Application Usage
 
@@ -35,6 +36,16 @@ The encoding levels available are:
   * Encode `payloadFilename` into `imageFilename` and output as `outputFilename`.
 
 ## Implementation Details
+
+### LSB Steganography
+
+LSB steganography consists in replacing the last N bits of every subpixel in the image with the appropriate bits of the data. As `N = {1, 2, 4}`, all bytes of the data can be split in a set number of subpixels.
+
+The encoding is done at `Image.encodePayload()`: the payload header is assembled (`Payload.getBytes()`), the encoding level is determined based on the total payload size and image resolution, and the data is converted to a 3D matrix with the same shape as the image. Finally, the last N bits of all subpixels are replaced with the payload.
+
+The decoding, at `Image.decodePayload()`, starts with a scan for a payload (and its encoding level) by `Image.hasPayload()` - if none is detected, a `ValueError` exception is raised. If one is found, the payload header is read and assembled, allowing the data to be read. The data bytes are extracted from the image via `Image.__readNextNBytes()`, which in turn calls `Image._readNBytes()` - single-threaded if the amount of bytes is small, multi-threaded otherwise. In the end, a checksum of the data read is calculated and checked against the one from the header, throwing an `AssertionError` if they don't match.
+
+A more detailed breakdown of both the payload header and the parallelization methods are below.
 
 ### Payload Header
 
@@ -57,7 +68,7 @@ After the header, a sequence of `data-size` bytes follows, containing the actual
 
 In theory, both encoding and decoding can be parallelized. However, as encoding consists mainly of writing to a big matrix (the resulting image) and Python's `multiprocessing` library is not fond of shared memory, that proved to be quite a challenge. Instead, encoding has been dramatically sped up by making heavy use of NumPy's vectorization methods, at the end of `Image.encodePayload()`.
 
-For decoding, a proper parallelization method was applied with `multiprocessing.Pool` using `threads` threads: each thread `t` decodes `n` payload bytes with indexes in `range(s, e)`, with `s = t * (n//threads) + min(n%threads, t)` and `e = (t+1) * (n//threads) + min(n%threads, (t+1))`. With encoding bit amounts being powers of 2, every thread is able to process its workload independently without the need to worry about race conditions. Overhead should be minimal as assigned job indexes are determined in O(1) time by the expressions above, thus being sequential and evenly shared. This section of code is present at the `Image.__readNextNBytes()` method.
+For decoding, a proper parallelization method was applied with `multiprocessing.Pool` using `threads` threads: each thread `t` decodes `n` payload bytes with indexes in `range(s, e)`, with `s = t * (n//threads) + min(n%threads, t)` and `e = (t+1) * (n//threads) + min(n%threads, (t+1))`. With encoding bit amounts being powers of 2, every thread is able to process its workload independently without the need to worry about race conditions. Overhead should be minimal as assigned job indexes are determined in O(1) time by the expressions above, thus being contiguous and evenly split between threads. This section of code is present at the `Image.__readNextNBytes()` method.
 
 ## Examples
 
@@ -70,13 +81,3 @@ Input Image | Input Size | Payload | Payload Size | Encoding | Output Image | Ou
 [plush-418x386.jpg](demo_files/plush-418x386.jpg) | 16.6 KB | [paperpeople.txt](demo_files/payloads/paperpeople.txt) | 3.3 KB | L0 | [plush-L0.png](demo_files/encoded/plush-L0.png) | 156 KB
 [caliadventure-1080x1350.jpg](demo_files/caliadventure-1080x1350.jpg) | 201.3 KB | [git-cheatsheet.pdf](demo_files/payloads/git-cheatsheet.pdf) | 352.8 KB | L0 | [caliadventure-L0.png](demo_files/encoded/caliadventure-L0.png) | 2.1 MB
 [nightfall-1920x1080.jpg](demo_files/nightfall-1920x1080.jpg) | 1.1 MB | [hap.mp4](demo_files/payloads/hap.mp4) | 1.2 MB | L1 | [nightfall-L1.png](demo_files/encoded/nightfall-L1.png) | 2.8 MB
-
-## Limitations
-
-* Assumes input image is a regular 3- or 4-channel (alpha) image (JPG, BMP, PNG, etc.). No specific support for types such as TIFF or GIF
-* Can only output PNGs
-
-## To-Do List
-
-* Handle PNGs as input (ignore transparency?)
-* Extra encoding modes and strategies?
