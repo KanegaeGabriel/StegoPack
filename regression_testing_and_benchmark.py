@@ -4,7 +4,7 @@ from time import time
 
 from StegoPack import *
 
-def test(cleanImageFilename, payloadFilename):
+def test(cleanImageFilename, payloadFilename, fillRandom=False):
     encodedImageFilename = "out.png"
     extractedPayloadFilename = "out-" + payloadFilename
 
@@ -12,7 +12,7 @@ def test(cleanImageFilename, payloadFilename):
     payload = Payload(payloadFilename)
 
     t0 = time()
-    image.encodePayload(payload)
+    image.encodePayload(payload, fillRandom)
     t1 = time()
 
     image.saveFile(encodedImageFilename)
@@ -27,11 +27,11 @@ def test(cleanImageFilename, payloadFilename):
     payload.saveFile()
     print("Decoding took {:.3f}s.".format(t3-t2))
 
-    os.remove(encodedImageFilename)
+    # os.remove(encodedImageFilename)
     os.remove(payloadFilename.split("/")[-1])
 
 if __name__ == "__main__":
-    test("demo_files/corgi-599x799.jpg", "demo_files/payloads/faustao.png") # L0
+    # test("demo_files/corgi-599x799.jpg", "demo_files/payloads/faustao.png") # L0
     '''
     Encoding 'faustao.png' into 'demo_files/corgi-599x799.jpg' using L0...
     Encoding took 0.277s.
@@ -40,7 +40,7 @@ if __name__ == "__main__":
     Decoding took 0.505s.
     '''
 
-    test("demo_files/nightfall-1920x1080.jpg", "demo_files/payloads/hap.mp4") # L1
+    # test("demo_files/nightfall-1920x1080.jpg", "demo_files/payloads/hap.mp4") # L1
     '''
     Encoding 'hap.mp4' into 'demo_files/nightfall-1920x1080.jpg' using L1...
     Encoding took 2.018s.
@@ -49,7 +49,7 @@ if __name__ == "__main__":
     Decoding took 2.633s.
     '''
 
-    test("demo_files/randall-2560x1372.png", "demo_files/payloads/pier39.mp4") # L2
+    # test("demo_files/randall-2560x1372.png", "demo_files/payloads/pier39.mp4") # L2
     '''
     Encoding 'pier39.mp4' into 'demo_files/randall-2560x1372.png' using L2...
     Encoding took 2.919s.
