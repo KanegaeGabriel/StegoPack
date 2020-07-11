@@ -196,7 +196,6 @@ class Image:
         self.data &= 0b11111111 - mask
         self.data |= payloadMatrix
 
-        print(len(packedPayload))
         return self.data
 
 class Payload:

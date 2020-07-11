@@ -31,29 +31,29 @@ def test(cleanImageFilename, payloadFilename, fillRandom=False):
     os.remove(payloadFilename.split("/")[-1])
 
 if __name__ == "__main__":
-    # test("demo_files/corgi-599x799.jpg", "demo_files/payloads/faustao.png") # L0
+    test("demo_files/corgi-599x799.jpg", "demo_files/payloads/faustao.png") # L0
     '''
     Encoding 'faustao.png' into 'demo_files/corgi-599x799.jpg' using L0...
-    Encoding took 0.277s.
+    Encoding took 0.443s.
     File 'faustao.png' found encoded as L0!
     Decoding...
-    Decoding took 0.505s.
+    Decoding took 0.925s.
     '''
 
-    # test("demo_files/nightfall-1920x1080.jpg", "demo_files/payloads/hap.mp4") # L1
+    test("demo_files/nightfall-1920x1080.jpg", "demo_files/payloads/hap.mp4") # L1
     '''
     Encoding 'hap.mp4' into 'demo_files/nightfall-1920x1080.jpg' using L1...
-    Encoding took 2.018s.
+    Encoding took 2.972s.
     File 'hap.mp4' found encoded as L1!
     Decoding...
-    Decoding took 2.633s.
+    Decoding took 3.029s.
     '''
 
-    # test("demo_files/randall-2560x1372.png", "demo_files/payloads/pier39.mp4") # L2
+    test("demo_files/randall-2560x1372.png", "demo_files/payloads/pier39.mp4") # L2
     '''
     Encoding 'pier39.mp4' into 'demo_files/randall-2560x1372.png' using L2...
-    Encoding took 2.919s.
+    Encoding took 4.436s.
     File 'pier39.mp4' found encoded as L2!
     Decoding...
-    Decoding took 3.686s.
+    Decoding took 3.964s.
     '''
