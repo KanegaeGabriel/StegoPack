@@ -74,9 +74,12 @@ For decoding, a proper parallelization method was applied with `multiprocessing.
 
 As the application is supposed to work with any image and payload file as input, the examples listed below are random images and files from the internet, with varying resolutions, styles and file sizes as to showcase the different distortions from different encoding levels.
 
+Side-to-side comparisons are available in the [`Demo.ipynb`](Demo.ipynb) Jupyter Notebook.
+
 Input Image | Input Size | Payload | Payload Size | Encoding | Output Image | Output Size
 -|-|-|-|-|-|-|
 [corgi-599x799.jpg](demo_files/corgi-599x799.jpg) | 66.2 KB | [faustao.png](demo_files/payloads/faustao.png) | 97.1 KB | L0 | [corgi-L0.png](demo_files/encoded/corgi-L0.png) | 671 KB
+[caliadventure-1080x1350.jpg](demo_files/caliadventure-1080x1350.jpg) | 201.3 KB | [randall.zip](demo_files/payloads/randall.zip) | 1.0 MB | L1 | [caliadventure-L1.png](demo_files/encoded/caliadventure-L1.png) | 2.5 MB
 [randall-2560x1372.png](demo_files/randall-2560x1372.png) | 1.2 MB | [pier39.mp4](demo_files/payloads/pier39.mp4) | 3.2 MB | L2 | [randall-L2.png](demo_files/encoded/randall-L2.png) | 4.3 MB
 [plush-418x386.jpg](demo_files/plush-418x386.jpg) | 16.6 KB | [paperpeople.txt](demo_files/payloads/paperpeople.txt) | 3.3 KB | L0 | [plush-L0.png](demo_files/encoded/plush-L0.png) | 156 KB
 [caliadventure-1080x1350.jpg](demo_files/caliadventure-1080x1350.jpg) | 201.3 KB | [git-cheatsheet.pdf](demo_files/payloads/git-cheatsheet.pdf) | 352.8 KB | L0 | [caliadventure-L0.png](demo_files/encoded/caliadventure-L0.png) | 2.1 MB
