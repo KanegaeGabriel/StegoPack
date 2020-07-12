@@ -25,7 +25,7 @@ The encoding levels available are:
 * [`StegoPack.py`](StegoPack.py) is the main module, containing the `Image` and `Payload` classes. Can also be run standalone as a full application via CLI.
 * [`Demo.ipynb`](Demo.ipynb) is a Jupyter Notebook containing a few examples using [`StegoPack.py`](StegoPack.py) and files from [`demo_files/`](demo_files/).
 * [`Analysis.ipynb`](Analysis.ipynb) is a Jupyter Notebook with a deeper analysis and discussion over the results.
-* [`regression_testing_and_benchmark.py`](`regression_testing_and_benchmark.py`) is a small helper script to run some examples, used on development to check for regression bugs. Also doubles as a benchmark, to evaluate improvements on runtime.
+* [`regression_testing_and_benchmark.py`](regression_testing_and_benchmark.py) is a small helper script to run some examples, used on development to check for regression bugs. Also doubles as a benchmark, to evaluate improvements on runtime.
 
 ## Standalone Application Usage
 
