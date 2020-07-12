@@ -5,7 +5,9 @@ Final project for **[SCC0251 - Image Processing](https://uspdigital.usp.br/jupit
 * 10262648 - Gabriel Kanegae Souza
 * 10262652 - [João Vitor dos Santos Tristão](http://github.com/jtristao/)
 
-`StegoPack` is a Python module and full application that is able to encode any file into an image via **LSB steganography**, as well as detect and decode a file from an image. For that, the lowest level of encoding is be selected (the one that degrades the original image the least), based on file sizes. For encoding, it receives an image and a file of any type, and outputs a PNG image with the file encoded in it. For decoding, it receives the image with an encoded file, and outputs the file with its original filename.
+`StegoPack` is a Python module and full application that is able to encode any file into an image via **LSB steganography**, as well as detect and decode a file from an image. For that, the lowest level of encoding is be selected (the one that degrades the original image the least), based on file sizes.
+
+This implementation focuses on modularity/flexibility (**Module Usage** below) and speed (multithreading implementation). The Python Notebooks also provide a more visual exploration of the method and its results.
 
 The encoding levels available are:
 
@@ -22,10 +24,10 @@ The encoding levels available are:
 
 * [`StegoPack.py`](StegoPack.py) is the main module, containing the `Image` and `Payload` classes. Can also be run standalone as a full application via CLI.
 * [`Demo.ipynb`](Demo.ipynb) is a Jupyter Notebook containing a few examples using [`StegoPack.py`](StegoPack.py) and files from [`demo_files/`](demo_files/).
-* [`Analysis.ipynb`](Analysis.ipynb) is a Jupyter Notebook running examples using [`StegoPack.py`](StegoPack.py) and files from [`demo_files/`](demo_files/), with a deeper analysis and discussion over the results.
+* [`Analysis.ipynb`](Analysis.ipynb) is a Jupyter Notebook with a deeper analysis and discussion over the results.
 * [`regression_testing_and_benchmark.py`](`regression_testing_and_benchmark.py`) is a small helper script to run some examples, used on development to check for regression bugs. Also doubles as a benchmark, to evaluate improvements on runtime.
 
-## Application Usage
+## Standalone Application Usage
 
 * `python3 StegoPack.py`
   * Show usage info.
@@ -35,6 +37,25 @@ The encoding levels available are:
 
 * `python3 StegoPack.py (imageFilename) (payloadFilename) (outputFilename)`
   * Encode `payloadFilename` into `imageFilename` and output as `outputFilename`.
+
+## Module Usage (Quick Start)
+
+All you need to use this module on your projects are the requirements above and [`StegoPack.py`](StegoPack.py) itself. Here's some basic boilerplate:
+
+```python3
+from StegoPack import *
+
+# Encoding
+image = Image(imageFilename)
+payload = Payload(payloadFilename)
+image.encodePayload(payload)
+image.saveFile(encodedImageFilename)
+
+# Decoding
+image = Image(encodedImageFilename)
+payload = image.decodePayload()
+payload.saveFile()
+```
 
 ## Implementation Details
 
@@ -80,8 +101,9 @@ Side-to-side comparisons are available in the [`Demo.ipynb`](Demo.ipynb) and [`A
 Input Image | Input Size | Payload | Payload Size | Encoding | Output Image | Output Size
 -|-|-|-|-|-|-|
 [corgi-599x799.jpg](demo_files/corgi-599x799.jpg) | 66.2 KB | [faustao.png](demo_files/payloads/faustao.png) | 97.1 KB | L0 | [corgi-L0.png](demo_files/encoded/corgi-L0.png) | 671 KB
-[caliadventure-1080x1350.jpg](demo_files/caliadventure-1080x1350.jpg) | 201.3 KB | [randall.zip](demo_files/payloads/randall.zip) | 1.0 MB | L1 | [caliadventure-L1.png](demo_files/encoded/caliadventure-L1.png) | 2.5 MB
-[randall-2560x1372.png](demo_files/randall-2560x1372.png) | 1.2 MB | [pier39.mp4](demo_files/payloads/pier39.mp4) | 3.2 MB | L2 | [randall-L2.png](demo_files/encoded/randall-L2.png) | 4.3 MB
 [plush-418x386.jpg](demo_files/plush-418x386.jpg) | 16.6 KB | [paperpeople.txt](demo_files/payloads/paperpeople.txt) | 3.3 KB | L0 | [plush-L0.png](demo_files/encoded/plush-L0.png) | 156 KB
 [caliadventure-1080x1350.jpg](demo_files/caliadventure-1080x1350.jpg) | 201.3 KB | [git-cheatsheet.pdf](demo_files/payloads/git-cheatsheet.pdf) | 352.8 KB | L0 | [caliadventure-L0.png](demo_files/encoded/caliadventure-L0.png) | 2.1 MB
+[caliadventure-1080x1350.jpg](demo_files/caliadventure-1080x1350.jpg) | 201.3 KB | [randall.zip](demo_files/payloads/randall.zip) | 1.0 MB | L1 | [caliadventure-L1.png](demo_files/encoded/caliadventure-L1.png) | 2.5 MB
 [nightfall-1920x1080.jpg](demo_files/nightfall-1920x1080.jpg) | 1.1 MB | [hap.mp4](demo_files/payloads/hap.mp4) | 1.2 MB | L1 | [nightfall-L1.png](demo_files/encoded/nightfall-L1.png) | 2.8 MB
+[gravityfalls-1435x837.jpg](demo_files/gravityfalls-1435x837.jpg) | 325 KB | [hap.mp4](demo_files/payloads/hap.mp4) | 1.2 MB | L2 | [gravityfalls-L2.png](demo_files/encoded/gravityfalls-L2.png) | 2.0 MB
+[randall-2560x1372.png](demo_files/randall-2560x1372.png) | 1.2 MB | [pier39.mp4](demo_files/payloads/pier39.mp4) | 3.2 MB | L2 | [randall-L2.png](demo_files/encoded/randall-L2.png) | 4.3 MB
