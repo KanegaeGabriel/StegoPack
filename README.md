@@ -22,6 +22,7 @@ The encoding levels available are:
 
 * [`StegoPack.py`](StegoPack.py) is the main module, containing the `Image` and `Payload` classes. Can also be run standalone as a full application via CLI.
 * [`Demo.ipynb`](Demo.ipynb) is a Jupyter Notebook containing a few examples using [`StegoPack.py`](StegoPack.py) and files from [`demo_files/`](demo_files/).
+* [`Analysis.ipynb`](Analysis.ipynb) is a Jupyter Notebook running examples using [`StegoPack.py`](StegoPack.py) and files from [`demo_files/`](demo_files/), with a deeper analysis and discussion over the results.
 * [`regression_testing_and_benchmark.py`](`regression_testing_and_benchmark.py`) is a small helper script to run some examples, used on development to check for regression bugs. Also doubles as a benchmark, to evaluate improvements on runtime.
 
 ## Application Usage
@@ -74,7 +75,7 @@ For decoding, a proper parallelization method was applied with `multiprocessing.
 
 As the application is supposed to work with any image and payload file as input, the examples listed below are random images and files from the internet, with varying resolutions, styles and file sizes as to showcase the different distortions from different encoding levels.
 
-Side-to-side comparisons are available in the [`Demo.ipynb`](Demo.ipynb) Jupyter Notebook.
+Side-to-side comparisons are available in the [`Demo.ipynb`](Demo.ipynb) and [`Analysis.ipynb`](Analysis.ipynb) Jupyter Notebooks.
 
 Input Image | Input Size | Payload | Payload Size | Encoding | Output Image | Output Size
 -|-|-|-|-|-|-|
